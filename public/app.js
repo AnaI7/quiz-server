@@ -1,3 +1,8 @@
+const btnIniciar = document.getElementById("btn-iniciar");
+const nomeInput = document.getElementById("nome");
+const inicioDiv = document.getElementById("inicio");
+const quizContainer = document.getElementById("quiz-container");
+
 const perguntas = [
 	{ pergunta: "Qual é a capital de Portugal?", opcoes: ["Lisboa", "Porto", "Coimbra", "Faro"], resposta: "Lisboa" },
 	{ pergunta: "Qual é 5 + 7?", opcoes: ["10", "11", "12", "13"], resposta: "12" },
@@ -6,11 +11,26 @@ const perguntas = [
 
 let pontuacao = 0;
 let i = 0;
-const nome = prompt("Qual é o seu nome?");
 
-function mostrarPergunta() {
+// Evento do botão
+btnIniciar.addEventListener("click", () => {
+	const nome = nomeInput.value.trim();
+	if (nome === "") {
+		alert("Por favor, escreve o teu nome!");
+		return;
+	}
+
+	// Esconde a tela inicial e mostra o quiz
+	inicioDiv.style.display = "none";
+	quizContainer.style.display = "block";
+
+	// Inicia o quiz
+	mostrarPergunta(nome);
+});
+
+function mostrarPergunta(nome) {
 	if (i >= perguntas.length) {
-		enviarResultado();
+		enviarResultado(nome);
 		return;
 	}
 
@@ -26,21 +46,22 @@ function mostrarPergunta() {
 		btn.addEventListener("click", () => {
 			if (opcao === p.resposta) pontuacao++;
 			i++;
-			mostrarPergunta();
+			mostrarPergunta(nome); // passa o nome
 		});
 		divOpcoes.appendChild(btn);
 	});
 }
 
-async function enviarResultado() {
+async function enviarResultado(nome) {
 	const res = await fetch("/submit", {
 		method: "POST",
 		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify({ nome, pontuacao })
 	});
+
 	const data = await res.json();
 
-	document.getElementById("quiz-container").style.display = "none";
+	quizContainer.style.display = "none";
 	document.getElementById("top3-container").style.display = "block";
 
 	const lista = document.getElementById("top3");
@@ -51,5 +72,3 @@ async function enviarResultado() {
 		lista.appendChild(li);
 	});
 }
-
-mostrarPergunta();

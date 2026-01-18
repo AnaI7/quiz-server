@@ -11,7 +11,15 @@
 
 	<h1>Quiz</h1>
 
-	<div id="quiz-container">
+	<div id="inicio">
+		<h2>Bem-vindo ao Quiz!</h2>
+		<label for="nome">Escreve o teu nome:</label>
+		<input type="text" id="nome" placeholder="Nome">
+		<button id="btn-iniciar">Iniciar Quiz</button>
+	</div>
+
+	<div class="content">
+	<div id="quiz-container" style="display:none">
 		<p id="pergunta"></p>
 		<div id="opcoes"></div>
 	</div>
@@ -19,6 +27,7 @@
 	<div id="top3-container" style="display:none">
 		<h2>Top 3 da Turma</h2>
 		<ol id="top3"></ol>
+	</div>
 	</div>
 
 	<script type="module" src="app.js"></script>
