@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+	<meta charset="UTF-8">
+	<title>Aluno - Quiz</title>
+	<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+	<div id="nome-container">
+		<h1>Bem-vindos ao Quiz</h1>
+
+		<h3>Escreve o teu nome:</h3>
+		<input id="nome" placeholder="Nome">
+
+		<h3>Escolhe o teu avatar:</h3>
+		<div id="avatars-container">
+			<!-- Avatares (PNG ou JPG) -->
+			<div class="avatar" data-avatar="avatar1.jpg"><img src="avatars/avatar1.jpg" alt="Avatar 1"></div>
+			<div class="avatar" data-avatar="avatar2.jpg"><img src="avatars/avatar2.jpg" alt="Avatar 2"></div>
+			<div class="avatar" data-avatar="avatar3.jpg"><img src="avatars/avatar3.jpg" alt="Avatar 3"></div>
+			<div class="avatar" data-avatar="avatar4.jpg"><img src="avatars/avatar4.jpg" alt="Avatar 4"></div>
+			<div class="avatar" data-avatar="avatar5.jpg"><img src="avatars/avatar5.jpg" alt="Avatar 5"></div>
+			<div class="avatar" data-avatar="avatar6.jpg"><img src="avatars/avatar6.jpg" alt="Avatar 6"></div>
+			<div class="avatar" data-avatar="avatar7.jpg"><img src="avatars/avatar7.jpg" alt="Avatar 7"></div>
+			<div class="avatar" data-avatar="avatar8.jpg"><img src="avatars/avatar8.jpg" alt="Avatar 8"></div>
+			<div class="avatar" data-avatar="avatar9.jpg"><img src="avatars/avatar9.jpg" alt="Avatar 9"></div>
+			<div class="avatar" data-avatar="avatar10.jpg"><img src="avatars/avatar10.jpg" alt="Avatar 10"></div>
+		</div>
+
+		<button id="btn-iniciar">Entrar no Quiz</button>
+	</div>
+
+	<div id="quiz-container" style="display:none;">
+		<h2 id="pergunta"></h2>
+		<div id="opcoes"></div>
+	</div>
+
+	<script src="/socket.io/socket.io.js"></script>
+	<script src="aluno.js"></script>
+</body>
+
+</html>
