@@ -1,15 +1,33 @@
-async function atualizarTop3() {
-	const res = await fetch("/resposta", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ nome: "", pontuacao: 0 }) });
-	const data = await res.json();
-	const lista = document.getElementById("top3");
-	lista.innerHTML = "";
-	data.top3.forEach(item => {
-		const li = document.createElement("li");
-		li.textContent = `${item.nome}: ${item.pontuacao} pontos`;
-		lista.appendChild(li);
-	});
-}
+import { io } from "https://cdn.socket.io/4.7.2/socket.io.esm.min.js";
 
-// Atualiza a cada 3 segundos
-setInterval(atualizarTop3, 3000);
-atualizarTop3();
+const socket = io();
+
+//  usamos o MESMO botão e ID do aluno
+const btnContinuar = document.getElementById("btn-continuar");
+
+// usa o mesmo código de sala que os alunos
+const codigoSala = "ABCD"; // depois pode ser dinâmico
+
+// 🔹 Ativar botão quando houver pelo menos 1 aluno
+socket.on("alunosAtualizados", alunos => {
+	const total = Object.keys(alunos).length;
+
+	console.log("Alunos ligados:", total);
+
+	btnContinuar.disabled = total === 0;
+});
+
+// 🔹 Professor força início do quiz
+btnContinuar.addEventListener("click", () => {
+	console.log("Professor clicou em Continuar");
+	socket.emit("forcarInicio", codigoSala);
+});
+
+// 🔹 Quando o quiz começa
+socket.on("iniciarQuiz", () => {
+	console.log("Quiz iniciado!");
+
+	// aqui podes, por exemplo:
+	// btnContinuar.style.display = "none";
+	// mostrar a próxima fase do quiz
+});

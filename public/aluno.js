@@ -1,92 +1,98 @@
+// ⚠️ ESTE FICHEIRO É SÓ PARA O ALUNO
 const socket = io();
 
-const btnIniciar = document.getElementById("btn-iniciar");
+console.log("aluno.js carregado");
+
+// elementos
+const btnContinuar = document.getElementById("btn-continuar");
 const nomeInput = document.getElementById("nome");
+const codigoInput = document.getElementById("codigo-input");
 const nomeContainer = document.getElementById("nome-container");
 const quizContainer = document.getElementById("quiz-container");
 const avatarElements = document.querySelectorAll(".avatar");
 
+// estado
+let nome = "";
+let avatarEscolhido = "";
+let codigoSala = "";
 let perguntas = [];
 let i = 0;
 let pontuacao = 0;
-let nome = "";
-let avatarEscolhido = "";
-let codigoSala = "ABCD"; // ou input para sala
 
-// Seleção de avatar
+/* ---------- SELEÇÃO DE AVATAR ---------- */
 avatarElements.forEach(el => {
 	el.addEventListener("click", () => {
+		console.log("Avatar clicado");
+
 		avatarElements.forEach(a => a.classList.remove("selecionado"));
 		el.classList.add("selecionado");
-		avatarEscolhido = el.dataset.avatar; // guarda a escolha
+
+		avatarEscolhido = el.dataset.avatar;
+		btnContinuar.disabled = false;
 	});
 });
 
-// Sala cheia
+/* ---------- SALA CHEIA ---------- */
 socket.on("salaCheia", () => {
-	alert("Desculpe, esta sala já tem 10 jogadores!");
-	nomeContainer.style.display = "block";
-	quizContainer.style.display = "none";
+	alert("Esta sala já tem 10 jogadores!");
+	btnContinuar.disabled = false;
+	btnContinuar.textContent = "Continuar";
 });
 
-btnIniciar.addEventListener("click", async () => {
+/* ---------- ALUNO CLICA CONTINUAR ---------- */
+btnContinuar.addEventListener("click", () => {
 	nome = nomeInput.value.trim();
-	if (!nome) {
-		alert("Por favor escreve o teu nome!");
-		return;
-	}
-	if (!avatarEscolhido) {
-		alert("Escolhe um avatar!");
+	codigoSala = codigoInput.value.trim();
+
+	if (!nome || !avatarEscolhido || !codigoSala) {
+		alert("Preenche código, nome e avatar!");
 		return;
 	}
 
-	// Envia info para o servidor
-	socket.emit("entrarSala", { codigo: codigoSala, nome, avatar: avatarEscolhido });
+	socket.emit("entrarSala", {
+		codigo: codigoSala,
+		nome,
+		avatar: avatarEscolhido
+	});
 
-	// Mostra quiz
+	btnContinuar.disabled = true;
+	btnContinuar.textContent = "À espera do professor…";
+});
+
+/* ---------- QUIZ COMEÇA ---------- */
+socket.on("iniciarQuiz", async () => {
 	nomeContainer.style.display = "none";
 	quizContainer.style.display = "block";
 
-	// Pega perguntas do servidor
 	const res = await fetch("/perguntas");
 	perguntas = await res.json();
 
+	i = 0;
+	pontuacao = 0;
 	mostrarPergunta();
 });
 
+/* ---------- QUIZ ---------- */
 function mostrarPergunta() {
 	if (i >= perguntas.length) {
-		enviarResultado();
+		alert(`Fim do quiz! Pontuação: ${pontuacao}`);
 		return;
 	}
 
 	const p = perguntas[i];
 	document.getElementById("pergunta").textContent = p.pergunta;
 
-	const divOpcoes = document.getElementById("opcoes");
-	divOpcoes.innerHTML = "";
+	const div = document.getElementById("opcoes");
+	div.innerHTML = "";
 
 	p.opcoes.forEach(opcao => {
 		const btn = document.createElement("button");
 		btn.textContent = opcao;
-		btn.addEventListener("click", () => {
+		btn.onclick = () => {
 			if (opcao === p.resposta) pontuacao++;
 			i++;
 			mostrarPergunta();
-		});
-		divOpcoes.appendChild(btn);
+		};
+		div.appendChild(btn);
 	});
-}
-
-async function enviarResultado() {
-	const res = await fetch("/resposta", {
-		method: "POST",
-		headers: { "Content-Type": "application/json" },
-		body: JSON.stringify({ nome, pontuacao })
-	});
-	const data = await res.json();
-	alert(`Quiz terminado! A tua pontuação: ${pontuacao}`);
-	quizContainer.style.display = "none";
-	nomeContainer.style.display = "block";
-	i = 0; pontuacao = 0; perguntas = [];
 }

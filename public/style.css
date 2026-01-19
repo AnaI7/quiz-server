@@ -9,9 +9,13 @@ body {
 	color: #fff; /* muda a cor do texto para branco se o fundo for escuro */
 }
 
+#nome-container {
+	margin-top: 10px;
+}
+
 h1 {
-	margin-top: 40px;
-	margin-bottom: 30px;
+	margin-top: 15px;
+	margin-bottom: 20px;
 	font-size: 50px;
 	text-align: center;
 	color: #fff;
@@ -25,10 +29,33 @@ h2 {
 }
 
 h3 {
-	margin-bottom: 30px;
+	margin-bottom: 20px;
 	font-size: 20px;
-	text-align: left;
+	text-align: center;
 	color: #fff;
+}
+
+h4 {
+	margin-bottom: 30px;
+	font-size: 25px;
+	text-align: center;
+	color: #fff;
+}
+
+#codigo-input,
+#nome {
+	display: block;
+	/* essencial para margin auto funcionar */
+	margin: 0 auto 25px;
+	/* centra horizontalmente + espaço em baixo */
+	padding: 12px;
+	font-size: 18px;
+	width: 320px;
+	/* largura confortável no PC */
+	border-radius: 8px;
+	border: none;
+	text-align: center;
+	/* texto centrado dentro da caixa */
 }
 
 #quiz-container,
@@ -86,19 +113,20 @@ h3 {
 }
 
 #avatars-container {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 10px;
-	max-width: 600px;
+	display: grid;
+	grid-template-columns: repeat(5, 1fr); /* 5 por linha */
+	gap: 20px;
+	max-width: 900px; /* controla o tamanho total: + largo no pc */
 	margin: 0 auto; /* centraliza na página */
+	padding: 0 10px; /* menos margem lateral */
 	justify-content: center; /* distribui os avatars uniformemente */
 }
 
 .avatar {
 	border: 2px solid transparent;
 	border-radius: 50%;
-	width: 80px;
-	height: 80px;
+	width: 140px;
+	height: 140px;
 	cursor: pointer;
 	flex-shrink: 0; /* impede que o avatar encolha */
 	overflow: hidden;
@@ -112,9 +140,89 @@ h3 {
 	height: 100%;
 	object-fit: cover; /* cobre todo o círculo */
 	display: block; /* remove espaço extra abaixo da imagem */
+	pointer-events: none;
 }
 
 .avatar.selecionado {
 	border-color: #007BFF; /* Azul quando selecionado */
 	transform: scale(1.1);
+}
+
+#btn-continuar {
+	display: block;
+	margin: 25px auto 0;
+	padding: 12px 30px;
+	font-size: 18px;
+	border: none;
+	border-radius: 8px;
+	background-color: #4CAF50;
+	color: white;
+	cursor: pointer;
+	opacity: 0.6;
+	transition: opacity 0.2s, transform 0.2s;
+}
+
+#btn-continuar:enabled {
+	opacity: 1;
+}
+
+#btn-continuar:hover:enabled {
+	transform: scale(1.05);
+}
+
+#btn-continuar:disabled {
+	cursor: not-allowed;
+}
+
+/* ---------- RESPONSIVO PARA TELEMÓVEL ---------- */
+@media (max-width: 600px) {
+
+	body {
+		padding: 20px;
+		justify-content: flex-start;
+		/* começa no topo */
+	}
+
+	h1 {
+		font-size: 32px;
+		margin-top: 20px;
+		margin-bottom: 20px;
+	}
+
+	h3 {
+		font-size: 18px;
+		text-align: center;
+		margin-bottom: 15px;
+	}
+
+	input#nome {
+		width: 100%;
+		font-size: 18px;
+		padding: 10px;
+		margin-bottom: 20px;
+	}
+
+	/* MUITO IMPORTANTE: menos colunas */
+	#avatars-container {
+		grid-template-columns: repeat(2, 1fr);
+		/* 2 por linha */
+		gap: 20px;
+		max-width: 100%;
+		margin-bottom: 30px;
+	}
+
+	/* avatares bem maiores */
+	.avatar {
+		width: 100px;
+		height: 100px;
+	}
+
+	/* botão grande e confortável */
+	#btn-continuar {
+		width: 100%;
+		font-size: 22px;
+		padding: 16px;
+		margin-top: 10px;
+	}
+
 }
