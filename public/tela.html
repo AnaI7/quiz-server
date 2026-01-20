@@ -9,6 +9,7 @@
 
 <body>
 	<h1>Bem-vindos ao Quiz</h1>
+	<h2 id="codigo-sala">Código da sala: ----</h2>
 	<h4>1º: Escrevam o vosso nome</h4>
 	<h4>2º: Escolham o avatar</h4>
 
@@ -29,10 +30,11 @@
 	<button id="btn-continuar" disabled>
 		Continuar
 	</button>
-	
+
 	<ol id="top3"></ol>
 
-	<script type="module" src="tela.js"></script>
+	<script src="/socket.io/socket.io.js"></script>
+	<script src="tela.js"></script>
 </body>
 
 </html>

@@ -1,4 +1,4 @@
-// ⚠️ ESTE FICHEIRO É SÓ PARA O ALUNO
+// ESTE FICHEIRO É SÓ PARA O ALUNO
 const socket = io();
 
 console.log("aluno.js carregado");
@@ -34,7 +34,7 @@ avatarElements.forEach(el => {
 
 /* ---------- SALA CHEIA ---------- */
 socket.on("salaCheia", () => {
-	alert("Esta sala já tem 10 jogadores!");
+	alert("O cérebro acertou… mas os dedos foram lentos! A sala está cheia!);
 	btnContinuar.disabled = false;
 	btnContinuar.textContent = "Continuar";
 });
@@ -42,7 +42,7 @@ socket.on("salaCheia", () => {
 /* ---------- ALUNO CLICA CONTINUAR ---------- */
 btnContinuar.addEventListener("click", () => {
 	nome = nomeInput.value.trim();
-	codigoSala = codigoInput.value.trim();
+	codigoSala = codigoInput.value.trim().toUpperCase();
 
 	if (!nome || !avatarEscolhido || !codigoSala) {
 		alert("Preenche código, nome e avatar!");

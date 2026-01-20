@@ -1,23 +1,60 @@
+const express = require("express");
+const path = require("path");
+const bodyParser = require("body-parser");
+const http = require("http");
+const { Server } = require("socket.io");
+
+const app = express();
+const PORT = 3000;
+
+// 🔹 cria servidor HTTP
+const server = http.createServer(app);
+
+// 🔹 cria o io AQUI (antes de usar)
+const io = new Server(server);
+
+// ---------------- MIDDLEWARE ----------------
+app.use(express.static(path.join(__dirname, "public")));
+app.use(bodyParser.json());
+
+// ---------------- ROTAS HTTP ----------------
+app.get("/", (req, res) => {
+	res.sendFile(path.join(__dirname, "public", "tela.html"));
+});
+
+// ---------------- DADOS ----------------
+let salas = {}; // { CODIGO: { alunos, iniciada } }
+
+// ---------------- SOCKET.IO ----------------
 io.on("connection", socket => {
 	console.log("Novo utilizador ligado:", socket.id);
 
-	// Professor cria sala
+	// 🧑‍🏫 PROFESSOR cria sala
 	socket.on("criarSala", () => {
-		const codigo = Math.random().toString(36).substring(2, 6).toUpperCase();
-		salas[codigo] = { alunos: {}, iniciada: false };
-		socket.join(codigo);
+		const codigo = Math.random().toString(36)
+			.substring(2, 6)
+			.toUpperCase();
+
+		salas[codigo] = {
+			alunos: {},
+			iniciada: false
+		};
+
+		socket.join(codigo); // 🔑 professor entra na sala
 		socket.emit("salaCriada", codigo);
+
+		console.log("Sala criada:", codigo);
 	});
 
-	// Aluno entra na sala
+	// 👩‍🎓 ALUNO entra na sala
 	socket.on("entrarSala", ({ codigo, nome, avatar }) => {
 		const sala = salas[codigo];
 		if (!sala || sala.iniciada) return;
 
-		const totalAntes = Object.keys(sala.alunos).length;
+		const total = Object.keys(sala.alunos).length;
 
-		// Limite de 10 jogadores
-		if (totalAntes >= 10) {
+		// limite 10 alunos
+		if (total >= 10) {
 			socket.emit("salaCheia");
 			return;
 		}
@@ -30,19 +67,16 @@ io.on("connection", socket => {
 
 		socket.join(codigo);
 
-		const totalDepois = Object.keys(sala.alunos).length;
-
-		// Atualiza professor
 		io.to(codigo).emit("alunosAtualizados", sala.alunos);
 
-		// ✅ Se chegaram a 10 alunos → começa automaticamente
-		if (totalDepois === 10) {
+		// início automático aos 10
+		if (Object.keys(sala.alunos).length === 10) {
 			sala.iniciada = true;
 			io.to(codigo).emit("iniciarQuiz");
 		}
 	});
 
-	// Professor força início
+	// 🧑‍🏫 PROFESSOR força início
 	socket.on("forcarInicio", codigo => {
 		const sala = salas[codigo];
 		if (!sala || sala.iniciada) return;
@@ -50,11 +84,9 @@ io.on("connection", socket => {
 		sala.iniciada = true;
 		io.to(codigo).emit("iniciarQuiz");
 	});
+});
 
-	// Aluno responde
-	socket.on("resposta", ({ codigo, correta }) => {
-		if (correta && salas[codigo]?.alunos[socket.id]) {
-			salas[codigo].alunos[socket.id].pontos += 10;
-		}
-	});
+// ---------------- INICIAR SERVIDOR ----------------
+server.listen(PORT, () => {
+	console.log(`Servidor a correr em http://localhost:${PORT}`);
 });

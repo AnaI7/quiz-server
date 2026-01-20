@@ -1,33 +1,24 @@
-import { io } from "https://cdn.socket.io/4.7.2/socket.io.esm.min.js";
-
 const socket = io();
-
-//  usamos o MESMO botão e ID do aluno
 const btnContinuar = document.getElementById("btn-continuar");
+const codigoEl = document.getElementById("codigo-sala");
 
-// usa o mesmo código de sala que os alunos
-const codigoSala = "ABCD"; // depois pode ser dinâmico
+let codigoSala = "";
 
-// 🔹 Ativar botão quando houver pelo menos 1 aluno
+// professor cria a sala
+socket.emit("criarSala");
+
+socket.on("salaCriada", codigo => {
+	codigoSala = codigo;
+	codigoEl.textContent = `Código da sala: ${codigo}`;
+});
+
+// ativa botão quando houver ≥1 aluno
 socket.on("alunosAtualizados", alunos => {
 	const total = Object.keys(alunos).length;
-
-	console.log("Alunos ligados:", total);
-
 	btnContinuar.disabled = total === 0;
 });
 
-// 🔹 Professor força início do quiz
+// professor inicia
 btnContinuar.addEventListener("click", () => {
-	console.log("Professor clicou em Continuar");
 	socket.emit("forcarInicio", codigoSala);
-});
-
-// 🔹 Quando o quiz começa
-socket.on("iniciarQuiz", () => {
-	console.log("Quiz iniciado!");
-
-	// aqui podes, por exemplo:
-	// btnContinuar.style.display = "none";
-	// mostrar a próxima fase do quiz
 });
