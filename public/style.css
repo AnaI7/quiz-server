@@ -1,12 +1,14 @@
 body {
 	font-family: Arial, sans-serif;
-	background: linear-gradient(to bottom right, #8783df, #a891ee); /*background: #f2f4f8;*/
+	background: linear-gradient(to bottom right, #8783df, #a891ee);
+	/*background: #f2f4f8;*/
 	display: flex;
 	flex-direction: column;
 	align-items: center;
 	min-height: 100vh;
 	margin: 0;
-	color: #fff; /* muda a cor do texto para branco se o fundo for escuro */
+	color: #fff;
+	/* muda a cor do texto para branco se o fundo for escuro */
 }
 
 #nome-container {
@@ -114,12 +116,17 @@ h4 {
 
 #avatars-container {
 	display: grid;
-	grid-template-columns: repeat(5, 1fr); /* 5 por linha */
+	grid-template-columns: repeat(5, 1fr);
+	/* 5 por linha */
 	gap: 20px;
-	max-width: 900px; /* controla o tamanho total: + largo no pc */
-	margin: 0 auto; /* centraliza na página */
-	padding: 0 10px; /* menos margem lateral */
-	justify-content: center; /* distribui os avatars uniformemente */
+	max-width: 900px;
+	/* controla o tamanho total: + largo no pc */
+	margin: 0 auto;
+	/* centraliza na página */
+	padding: 0 10px;
+	/* menos margem lateral */
+	justify-content: center;
+	/* distribui os avatars uniformemente */
 }
 
 .avatar {
@@ -128,7 +135,8 @@ h4 {
 	width: 140px;
 	height: 140px;
 	cursor: pointer;
-	flex-shrink: 0; /* impede que o avatar encolha */
+	flex-shrink: 0;
+	/* impede que o avatar encolha */
 	overflow: hidden;
 	display: flex;
 	align-items: center;
@@ -138,13 +146,16 @@ h4 {
 .avatar img {
 	width: 100%;
 	height: 100%;
-	object-fit: cover; /* cobre todo o círculo */
-	display: block; /* remove espaço extra abaixo da imagem */
+	object-fit: cover;
+	/* cobre todo o círculo */
+	display: block;
+	/* remove espaço extra abaixo da imagem */
 	pointer-events: none;
 }
 
 .avatar.selecionado {
-	border-color: #007BFF; /* Azul quando selecionado */
+	border-color: #007BFF;
+	/* Azul quando selecionado */
 	transform: scale(1.1);
 }
 

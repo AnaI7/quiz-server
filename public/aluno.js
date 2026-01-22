@@ -1,98 +1,93 @@
-// ESTE FICHEIRO É SÓ PARA O ALUNO
-const socket = io();
 
-console.log("aluno.js carregado");
-
-// elementos
 const btnContinuar = document.getElementById("btn-continuar");
 const nomeInput = document.getElementById("nome");
-const codigoInput = document.getElementById("codigo-input");
 const nomeContainer = document.getElementById("nome-container");
 const quizContainer = document.getElementById("quiz-container");
-const avatarElements = document.querySelectorAll(".avatar");
 
-// estado
-let nome = "";
-let avatarEscolhido = "";
-let codigoSala = "";
+const perguntaEl = document.getElementById("pergunta");
+const opcoesEl = document.getElementById("opcoes");
+
+const resultadoDiv = document.getElementById("resultado");
+const resultadoTexto = document.getElementById("resultado-texto");
+
+// ================= ESTADO =================
 let perguntas = [];
-let i = 0;
-let pontuacao = 0;
+let indiceAtual = 0;
 
-/* ---------- SELEÇÃO DE AVATAR ---------- */
-avatarElements.forEach(el => {
-	el.addEventListener("click", () => {
-		console.log("Avatar clicado");
+// ================= INICIAR QUIZ =================
+btnContinuar.addEventListener("click", async () => {
+	const nome = nomeInput.value.trim();
 
-		avatarElements.forEach(a => a.classList.remove("selecionado"));
-		el.classList.add("selecionado");
-
-		avatarEscolhido = el.dataset.avatar;
-		btnContinuar.disabled = false;
-	});
-});
-
-/* ---------- SALA CHEIA ---------- */
-socket.on("salaCheia", () => {
-	alert("O cérebro acertou… mas os dedos foram lentos! A sala está cheia!);
-	btnContinuar.disabled = false;
-	btnContinuar.textContent = "Continuar";
-});
-
-/* ---------- ALUNO CLICA CONTINUAR ---------- */
-btnContinuar.addEventListener("click", () => {
-	nome = nomeInput.value.trim();
-	codigoSala = codigoInput.value.trim().toUpperCase();
-
-	if (!nome || !avatarEscolhido || !codigoSala) {
-		alert("Preenche código, nome e avatar!");
+	if (!nome) {
+		alert("Escreve o teu nome!");
 		return;
 	}
 
-	socket.emit("entrarSala", {
-		codigo: codigoSala,
-		nome,
-		avatar: avatarEscolhido
+	// pedido ao servidor para iniciar quiz
+	const res = await fetch("/iniciar", {
+		method: "POST",
+		headers: { "Content-Type": "application/json" },
+		body: JSON.stringify({ nome })
 	});
 
-	btnContinuar.disabled = true;
-	btnContinuar.textContent = "À espera do professor…";
-});
+	const data = await res.json();
 
-/* ---------- QUIZ COMEÇA ---------- */
-socket.on("iniciarQuiz", async () => {
+	// muda de ecrã
 	nomeContainer.style.display = "none";
 	quizContainer.style.display = "block";
 
-	const res = await fetch("/perguntas");
-	perguntas = await res.json();
-
-	i = 0;
-	pontuacao = 0;
-	mostrarPergunta();
+	// mostra primeira pergunta
+	mostrarPergunta(data.pergunta);
 });
 
-/* ---------- QUIZ ---------- */
-function mostrarPergunta() {
-	if (i >= perguntas.length) {
-		alert(`Fim do quiz! Pontuação: ${pontuacao}`);
-		return;
-	}
+// ================= MOSTRAR PERGUNTA =================
+function mostrarPergunta(pergunta) {
+	perguntaEl.textContent = pergunta.pergunta;
+	opcoesEl.innerHTML = "";
 
-	const p = perguntas[i];
-	document.getElementById("pergunta").textContent = p.pergunta;
-
-	const div = document.getElementById("opcoes");
-	div.innerHTML = "";
-
-	p.opcoes.forEach(opcao => {
+	pergunta.opcoes.forEach((opcao, index) => {
 		const btn = document.createElement("button");
 		btn.textContent = opcao;
-		btn.onclick = () => {
-			if (opcao === p.resposta) pontuacao++;
-			i++;
-			mostrarPergunta();
-		};
-		div.appendChild(btn);
+
+		btn.addEventListener("click", async () => {
+			// envia resposta ao servidor
+			const res = await fetch("/responder", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ resposta: index })
+			});
+
+			const data = await res.json();
+
+			// fim do quiz
+			if (data.fim) {
+				mostrarResultado(data.acertos, data.total);
+				return;
+			}
+
+			// próxima pergunta
+			mostrarPergunta(data.pergunta);
+		});
+
+		opcoesEl.appendChild(btn);
 	});
+}
+
+// ================= RESULTADO FINAL =================
+function mostrarResultado(acertos, total) {
+	quizContainer.style.display = "none";
+	resultadoDiv.style.display = "block";
+
+	let mensagem = "";
+
+	if (acertos <= 4) {
+		mensagem = "Precisas de rever a matéria 🙂";
+	} else if (acertos <= 7) {
+		mensagem = "Bom trabalho 👍";
+	} else {
+		mensagem = "Excelente! 👏";
+	}
+
+	resultadoTexto.textContent =
+		`Tiveste ${acertos} / ${total} respostas certas\n${mensagem}`;
 }

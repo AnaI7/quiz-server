@@ -1,92 +1,128 @@
+// ================= IMPORTAÇÕES =================
 const express = require("express");
 const path = require("path");
-const bodyParser = require("body-parser");
-const http = require("http");
-const { Server } = require("socket.io");
+const sqlite3 = require("sqlite3").verbose();
 
+// ================= APP =================
 const app = express();
 const PORT = 3000;
 
-// 🔹 cria servidor HTTP
-const server = http.createServer(app);
-
-// 🔹 cria o io AQUI (antes de usar)
-const io = new Server(server);
-
-// ---------------- MIDDLEWARE ----------------
+// ================= MIDDLEWARE =================
+app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
-app.use(bodyParser.json());
 
-// ---------------- ROTAS HTTP ----------------
+// ================= BASE DE DADOS =================
+const db = new sqlite3.Database("quiz.db");
+
+// cria tabela se não existir
+db.run(`
+	CREATE TABLE IF NOT EXISTS resultados (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		nome TEXT,
+		acertos INTEGER,
+		total INTEGER,
+		data DATETIME DEFAULT CURRENT_TIMESTAMP
+	)
+`);
+
+// ================= PERGUNTAS =================
+const perguntas = [
+	{
+		pergunta: "Qual é a capital de Portugal?",
+		opcoes: ["Lisboa", "Porto", "Coimbra", "Braga"],
+		correta: 0
+	},
+	{
+		pergunta: "Quantos continentes existem?",
+		opcoes: ["5", "6", "7", "8"],
+		correta: 2
+	},
+	{
+		pergunta: "Quem escreveu 'Os Lusíadas'?",
+		opcoes: ["Fernando Pessoa", "Eça de Queirós", "Luís de Camões", "Gil Vicente"],
+		correta: 2
+	},
+	{
+		pergunta: "Qual é o maior planeta do Sistema Solar?",
+		opcoes: ["Terra", "Júpiter", "Saturno", "Marte"],
+		correta: 1
+	},
+	{
+		pergunta: "Qual é o símbolo químico da água?",
+		opcoes: ["O2", "CO2", "H2O", "HO"],
+		correta: 2
+	},
+	// 👉 adiciona até 20 perguntas
+];
+
+// ================= FUNÇÕES =================
+function escolherPerguntasAleatorias(lista, quantidade) {
+	return [...lista].sort(() => Math.random() - 0.5).slice(0, quantidade);
+}
+
+// ================= ESTADO DO QUIZ =================
+let quizAtual = {};
+
+// ================= ROTAS =================
+
+// Página inicial → aluno
 app.get("/", (req, res) => {
-	res.sendFile(path.join(__dirname, "public", "tela.html"));
+	res.sendFile(path.join(__dirname, "public", "aluno.html"));
 });
 
-// ---------------- DADOS ----------------
-let salas = {}; // { CODIGO: { alunos, iniciada } }
+// Iniciar quiz
+app.post("/iniciar", (req, res) => {
+	const { nome } = req.body;
 
-// ---------------- SOCKET.IO ----------------
-io.on("connection", socket => {
-	console.log("Novo utilizador ligado:", socket.id);
+	const selecionadas = escolherPerguntasAleatorias(perguntas, 10);
 
-	// 🧑‍🏫 PROFESSOR cria sala
-	socket.on("criarSala", () => {
-		const codigo = Math.random().toString(36)
-			.substring(2, 6)
-			.toUpperCase();
+	quizAtual = {
+		nome,
+		perguntas: selecionadas,
+		atual: 0,
+		acertos: 0
+	};
 
-		salas[codigo] = {
-			alunos: {},
-			iniciada: false
-		};
-
-		socket.join(codigo); // 🔑 professor entra na sala
-		socket.emit("salaCriada", codigo);
-
-		console.log("Sala criada:", codigo);
-	});
-
-	// 👩‍🎓 ALUNO entra na sala
-	socket.on("entrarSala", ({ codigo, nome, avatar }) => {
-		const sala = salas[codigo];
-		if (!sala || sala.iniciada) return;
-
-		const total = Object.keys(sala.alunos).length;
-
-		// limite 10 alunos
-		if (total >= 10) {
-			socket.emit("salaCheia");
-			return;
-		}
-
-		sala.alunos[socket.id] = {
-			nome,
-			avatar,
-			pontos: 0
-		};
-
-		socket.join(codigo);
-
-		io.to(codigo).emit("alunosAtualizados", sala.alunos);
-
-		// início automático aos 10
-		if (Object.keys(sala.alunos).length === 10) {
-			sala.iniciada = true;
-			io.to(codigo).emit("iniciarQuiz");
-		}
-	});
-
-	// 🧑‍🏫 PROFESSOR força início
-	socket.on("forcarInicio", codigo => {
-		const sala = salas[codigo];
-		if (!sala || sala.iniciada) return;
-
-		sala.iniciada = true;
-		io.to(codigo).emit("iniciarQuiz");
+	res.json({
+		pergunta: selecionadas[0],
+		index: 0
 	});
 });
 
-// ---------------- INICIAR SERVIDOR ----------------
-server.listen(PORT, () => {
+// Responder pergunta
+app.post("/responder", (req, res) => {
+	const { resposta } = req.body;
+	const atual = quizAtual.perguntas[quizAtual.atual];
+
+	if (resposta === atual.correta) {
+		quizAtual.acertos++;
+	}
+
+	quizAtual.atual++;
+
+	// fim do quiz
+	if (quizAtual.atual >= quizAtual.perguntas.length) {
+		db.run(
+			"INSERT INTO resultados (nome, acertos, total) VALUES (?, ?, ?)",
+			[quizAtual.nome, quizAtual.acertos, quizAtual.perguntas.length]
+		);
+
+		return res.json({
+			fim: true,
+			acertos: quizAtual.acertos,
+			total: quizAtual.perguntas.length
+		});
+	}
+
+	// próxima pergunta
+	res.json({
+		fim: false,
+		pergunta: quizAtual.perguntas[quizAtual.atual],
+		index: quizAtual.atual
+	});
+});
+
+// ================= SERVIDOR =================
+app.listen(PORT, () => {
 	console.log(`Servidor a correr em http://localhost:${PORT}`);
 });

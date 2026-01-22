@@ -1,52 +1,42 @@
 <!DOCTYPE html>
 <html lang="pt">
-
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Aluno - Quiz</title>
-
-	<!-- O CSS FICA AQUI -->
+	<title>Quiz de Autoavaliação</title>
 	<link rel="stylesheet" href="style.css">
-</head>
+	</head>
 
-<body>
+	<body>
 
-	<div id="nome-container">
-		<h1>Bem-vindos ao Quiz</h1>
+		<!-- ===== ECRÃ INICIAL ===== -->
+		<div id="nome-container">
+			<h1>Quiz de Autoavaliação</h1>
 
-		<h3>Insere o oódigo da sala:</h3>
-		<input id="codigo-input" placeholder="Ex: A1B2">
+			<h3>Escreve o teu nome:</h3>
+			<input id="nome" placeholder="Nome">
 
-		<h3>Escreve o teu nome:</h3>
-		<input id="nome" placeholder="Nome">
-
-		<h3>Escolhe o teu avatar:</h3>
-		<div id="avatars-container">
-			<div class="avatar" data-avatar="avatar1.jpg"><img src="avatars/avatar1.jpg"></div>
-			<div class="avatar" data-avatar="avatar2.jpg"><img src="avatars/avatar2.jpg"></div>
-			<div class="avatar" data-avatar="avatar3.jpg"><img src="avatars/avatar3.jpg"></div>
-			<div class="avatar" data-avatar="avatar4.jpg"><img src="avatars/avatar4.jpg"></div>
-			<div class="avatar" data-avatar="avatar5.jpg"><img src="avatars/avatar5.jpg"></div>
-			<div class="avatar" data-avatar="avatar6.jpg"><img src="avatars/avatar6.jpg"></div>
-			<div class="avatar" data-avatar="avatar7.jpg"><img src="avatars/avatar7.jpg"></div>
-			<div class="avatar" data-avatar="avatar8.jpg"><img src="avatars/avatar8.jpg"></div>
-			<div class="avatar" data-avatar="avatar9.jpg"><img src="avatars/avatar9.jpg"></div>
-			<div class="avatar" data-avatar="avatar10.jpg"><img src="avatars/avatar10.jpg"></div>
+			<button id="btn-continuar" class="btn-principal">
+				Iniciar Quiz
+			</button>
 		</div>
 
-		<button id="btn-continuar" class="btn-principal" disabled>
-			Continuar
-		</button>
-	</div>
+		<!-- ===== QUIZ ===== -->
+		<div id="quiz-container" style="display:none;">
+			<h2 id="pergunta"></h2>
+			<div id="opcoes"></div>
+		</div>
 
-	<div id="quiz-container" style="display:none;">
-		<h2 id="pergunta"></h2>
-		<div id="opcoes"></div>
-	</div>
+		<!-- ===== RESULTADO FINAL ===== -->
+		<div id="resultado" style="display:none;">
+			<h2 id="resultado-texto"></h2>
 
-	<script src="/socket.io/socket.io.js"></script>
-	<script src="aluno.js"></script>
-</body>
+			<button class="btn-principal" onclick="window.location.reload()">
+				Tentar novamente
+			</button>
+		</div>
 
-</html>
+		<script src="aluno.js"></script>
+	</body>
+
+	</html>
