@@ -1,29 +1,34 @@
-
 const btnContinuar = document.getElementById("btn-continuar");
 const nomeInput = document.getElementById("nome");
+
 const nomeContainer = document.getElementById("nome-container");
 const quizContainer = document.getElementById("quiz-container");
+const topBar = document.getElementById("top-bar");
 
 const perguntaEl = document.getElementById("pergunta");
 const opcoesEl = document.getElementById("opcoes");
 
+const progressoEl = document.getElementById("progresso");
+const pontosEl = document.getElementById("pontos");
+
 const resultadoDiv = document.getElementById("resultado");
 const resultadoTexto = document.getElementById("resultado-texto");
 
-// ================= ESTADO =================
-let perguntas = [];
-let indiceAtual = 0;
+const letras = ["A", "B", "C", "D"];
 
-// ================= INICIAR QUIZ =================
+// ===== ESTADO =====
+let numeroPergunta = 1;
+let totalPerguntas = 10;
+let pontos = 0;
+
+// ===== INICIAR QUIZ =====
 btnContinuar.addEventListener("click", async () => {
 	const nome = nomeInput.value.trim();
-
 	if (!nome) {
 		alert("Escreve o teu nome!");
 		return;
 	}
 
-	// pedido ao servidor para iniciar quiz
 	const res = await fetch("/iniciar", {
 		method: "POST",
 		headers: { "Content-Type": "application/json" },
@@ -32,25 +37,34 @@ btnContinuar.addEventListener("click", async () => {
 
 	const data = await res.json();
 
-	// muda de ecrã
+	// reset estado
+	numeroPergunta = 1;
+	pontos = 0;
+
+	// muda ecrãs
 	nomeContainer.style.display = "none";
+	topBar.style.display = "flex";
 	quizContainer.style.display = "block";
 
-	// mostra primeira pergunta
+	atualizarTopBar();
 	mostrarPergunta(data.pergunta);
 });
 
-// ================= MOSTRAR PERGUNTA =================
+// ===== MOSTRAR PERGUNTA =====
 function mostrarPergunta(pergunta) {
 	perguntaEl.textContent = pergunta.pergunta;
 	opcoesEl.innerHTML = "";
 
-	pergunta.opcoes.forEach((opcao, index) => {
-		const btn = document.createElement("button");
-		btn.textContent = opcao;
+	pergunta.opcoes.forEach((texto, index) => {
+		const div = document.createElement("div");
+		div.className = "opcao";
 
-		btn.addEventListener("click", async () => {
-			// envia resposta ao servidor
+		div.innerHTML = `
+			<span>${letras[index]}</span>
+			${texto}
+		`;
+
+		div.onclick = async () => {
 			const res = await fetch("/responder", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
@@ -59,35 +73,41 @@ function mostrarPergunta(pergunta) {
 
 			const data = await res.json();
 
-			// fim do quiz
-			if (data.fim) {
-				mostrarResultado(data.acertos, data.total);
-				return;
+			// se acertou, soma ponto
+			if (data.acertou) {
+				pontos++;
 			}
 
-			// próxima pergunta
-			mostrarPergunta(data.pergunta);
-		});
+			if (data.fim) {
+				mostrarResultado(data.acertos, data.total);
+			} else {
+				numeroPergunta++;
+				atualizarTopBar();
+				mostrarPergunta(data.pergunta);
+			}
+		};
 
-		opcoesEl.appendChild(btn);
+		opcoesEl.appendChild(div);
 	});
 }
 
-// ================= RESULTADO FINAL =================
+// ===== ATUALIZAR TOP BAR =====
+function atualizarTopBar() {
+	pontosEl.textContent = `★ ${pontos}`;
+	progressoEl.textContent = `⦿ ${numeroPergunta}/${totalPerguntas}`;
+}
+
+// ===== RESULTADO FINAL =====
 function mostrarResultado(acertos, total) {
+	topBar.style.display = "none";
 	quizContainer.style.display = "none";
 	resultadoDiv.style.display = "block";
 
-	let mensagem = "";
-
-	if (acertos <= 4) {
-		mensagem = "Precisas de rever a matéria 🙂";
-	} else if (acertos <= 7) {
-		mensagem = "Bom trabalho 👍";
-	} else {
-		mensagem = "Excelente! 👏";
-	}
+	let msg =
+		acertos >= 8 ? "Excelente! 👏" :
+			acertos >= 5 ? "Bom trabalho 👍" :
+				"Precisas de estudar mais 🙂";
 
 	resultadoTexto.textContent =
-		`Tiveste ${acertos} / ${total} respostas certas\n${mensagem}`;
+		`Tiveste ${acertos} / ${total} respostas certas\n${msg}`;
 }

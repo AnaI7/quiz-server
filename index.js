@@ -1,7 +1,9 @@
 // ================= IMPORTAÇÕES =================
 const express = require("express");
 const path = require("path");
-const sqlite3 = require("sqlite3").verbose();
+
+const perguntas = require("./perguntas"); // perguntas.js
+const db = require("./db");               // db.js
 
 // ================= APP =================
 const app = express();
@@ -11,57 +13,13 @@ const PORT = 3000;
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
 
-// ================= BASE DE DADOS =================
-const db = new sqlite3.Database("quiz.db");
-
-// cria tabela se não existir
-db.run(`
-	CREATE TABLE IF NOT EXISTS resultados (
-		id INTEGER PRIMARY KEY AUTOINCREMENT,
-		nome TEXT,
-		acertos INTEGER,
-		total INTEGER,
-		data DATETIME DEFAULT CURRENT_TIMESTAMP
-	)
-`);
-
-// ================= PERGUNTAS =================
-const perguntas = [
-	{
-		pergunta: "Qual é a capital de Portugal?",
-		opcoes: ["Lisboa", "Porto", "Coimbra", "Braga"],
-		correta: 0
-	},
-	{
-		pergunta: "Quantos continentes existem?",
-		opcoes: ["5", "6", "7", "8"],
-		correta: 2
-	},
-	{
-		pergunta: "Quem escreveu 'Os Lusíadas'?",
-		opcoes: ["Fernando Pessoa", "Eça de Queirós", "Luís de Camões", "Gil Vicente"],
-		correta: 2
-	},
-	{
-		pergunta: "Qual é o maior planeta do Sistema Solar?",
-		opcoes: ["Terra", "Júpiter", "Saturno", "Marte"],
-		correta: 1
-	},
-	{
-		pergunta: "Qual é o símbolo químico da água?",
-		opcoes: ["O2", "CO2", "H2O", "HO"],
-		correta: 2
-	},
-	// 👉 adiciona até 20 perguntas
-];
+// ================= ESTADO DO QUIZ =================
+let quizAtual = null;
 
 // ================= FUNÇÕES =================
 function escolherPerguntasAleatorias(lista, quantidade) {
 	return [...lista].sort(() => Math.random() - 0.5).slice(0, quantidade);
 }
-
-// ================= ESTADO DO QUIZ =================
-let quizAtual = {};
 
 // ================= ROTAS =================
 
@@ -70,9 +28,13 @@ app.get("/", (req, res) => {
 	res.sendFile(path.join(__dirname, "public", "aluno.html"));
 });
 
-// Iniciar quiz
+// ---------------- INICIAR QUIZ ----------------
 app.post("/iniciar", (req, res) => {
 	const { nome } = req.body;
+
+	if (!nome) {
+		return res.status(400).json({ erro: "Nome obrigatório" });
+	}
 
 	const selecionadas = escolherPerguntasAleatorias(perguntas, 10);
 
@@ -84,23 +46,25 @@ app.post("/iniciar", (req, res) => {
 	};
 
 	res.json({
-		pergunta: selecionadas[0],
-		index: 0
+		pergunta: quizAtual.perguntas[0]
 	});
 });
 
-// Responder pergunta
+// ---------------- RESPONDER ----------------
 app.post("/responder", (req, res) => {
-	const { resposta } = req.body;
-	const atual = quizAtual.perguntas[quizAtual.atual];
-
-	if (resposta === atual.correta) {
-		quizAtual.acertos++;
+	if (!quizAtual) {
+		return res.status(400).json({ erro: "Quiz não iniciado" });
 	}
+
+	const { resposta } = req.body;
+	const pergunta = quizAtual.perguntas[quizAtual.atual];
+
+	const acertou = resposta === pergunta.correta;
+	if (acertou) quizAtual.acertos++;
 
 	quizAtual.atual++;
 
-	// fim do quiz
+	// FIM DO QUIZ
 	if (quizAtual.atual >= quizAtual.perguntas.length) {
 		db.run(
 			"INSERT INTO resultados (nome, acertos, total) VALUES (?, ?, ?)",
@@ -110,19 +74,20 @@ app.post("/responder", (req, res) => {
 		return res.json({
 			fim: true,
 			acertos: quizAtual.acertos,
-			total: quizAtual.perguntas.length
+			total: quizAtual.perguntas.length,
+			acertou
 		});
 	}
 
-	// próxima pergunta
+	// PRÓXIMA PERGUNTA
 	res.json({
 		fim: false,
-		pergunta: quizAtual.perguntas[quizAtual.atual],
-		index: quizAtual.atual
+		acertou,
+		pergunta: quizAtual.perguntas[quizAtual.atual]
 	});
 });
 
 // ================= SERVIDOR =================
 app.listen(PORT, () => {
-	console.log(`Servidor a correr em http://localhost:${PORT}`);
+	console.log(`✅ Servidor a correr em http://localhost:${PORT}`);
 });
