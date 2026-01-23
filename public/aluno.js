@@ -65,6 +65,14 @@ function mostrarPergunta(pergunta) {
 		`;
 
 		div.onclick = async () => {
+
+			// desativa todas as opções
+			const todasOpcoes = document.querySelectorAll(".opcao");
+			todasOpcoes.forEach(o => {
+				o.classList.add("desativada");
+				o.onclick = null;
+			});
+
 			const res = await fetch("/responder", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
@@ -72,24 +80,50 @@ function mostrarPergunta(pergunta) {
 			});
 
 			const data = await res.json();
+			const indiceCorreto = pergunta.correta;
 
-			// se acertou, soma ponto
 			if (data.acertou) {
+				// correta → verde imediato
+				div.classList.add("correta");
 				pontos++;
-			}
 
-			if (data.fim) {
-				mostrarResultado(data.acertos, data.total);
+				// avança após 1s
+				setTimeout(() => {
+					if (data.fim) {
+						mostrarResultado(data.acertos, data.total);
+					} else {
+						numeroPergunta++;
+						atualizarTopBar();
+						mostrarPergunta(data.pergunta);
+					}
+				}, 1000);
+
 			} else {
-				numeroPergunta++;
-				atualizarTopBar();
-				mostrarPergunta(data.pergunta);
+				// errada → vermelho imediato
+				div.classList.add("errada");
+
+				// após 1s mostra a correta
+				setTimeout(() => {
+					todasOpcoes[indiceCorreto].classList.add("correta");
+				}, 1000);
+
+				//  após 2s avança
+				setTimeout(() => {
+					if (data.fim) {
+						mostrarResultado(data.acertos, data.total);
+					} else {
+						numeroPergunta++;
+						atualizarTopBar();
+						mostrarPergunta(data.pergunta);
+					}
+				}, 2000);
 			}
 		};
 
 		opcoesEl.appendChild(div);
 	});
 }
+
 
 // ===== ATUALIZAR TOP BAR =====
 function atualizarTopBar() {

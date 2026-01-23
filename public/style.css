@@ -96,3 +96,91 @@ body {
 	color: white;
 	cursor: pointer;
 }
+
+.opcao.correta {
+	background-color: #4CAF50;
+	/* verde */
+	color: white;
+	border-color: #4CAF50;
+}
+
+.opcao.errada {
+	background-color: #f44336;
+	/* vermelho */
+	color: white;
+	border-color: #f44336;
+}
+
+/* impede cliques repetidos após escolher */
+.opcao.desativada {
+	pointer-events: none;
+	opacity: 0.7;
+}
+
+.opcao.desativada {
+	pointer-events: none;
+	opacity: 0.85;
+}
+
+.opcao.correta {
+	background: #4CAF50;
+	color: white;
+	border-color: #4CAF50;
+}
+
+.opcao.errada {
+	background: #f44336;
+	color: white;
+	border-color: #f44336;
+}
+
+/* ===== PÁGINA INICIAL ===== */
+.home-container {
+	min-height: 100vh;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	text-align: center;
+	background: linear-gradient(135deg, #6a5acd, #836fff);
+	color: white;
+	padding: 20px;
+}
+
+.home-container h1 {
+	font-size: 48px;
+	margin-bottom: 10px;
+}
+
+.home-container h2 {
+	font-size: 24px;
+	font-weight: normal;
+	margin-bottom: 40px;
+}
+
+.logo {
+	font-weight: bold;
+	color: #ffeb3b;
+}
+
+.home-buttons {
+	display: flex;
+	gap: 20px;
+}
+
+.btn-secundario {
+	padding: 12px 30px;
+	font-size: 18px;
+	border-radius: 8px;
+	background: transparent;
+	border: 2px solid white;
+	color: white;
+	cursor: pointer;
+	text-decoration: none;
+	transition: background 0.2s, color 0.2s;
+}
+
+.btn-secundario:hover {
+	background: white;
+	color: #6a5acd;
+}

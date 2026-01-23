@@ -1,0 +1,72 @@
+body {
+	margin: 0;
+	font-family: Arial, sans-serif;
+	background: linear-gradient(to bottom right, #6a5acd, #836fff);
+	min-height: 100vh;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+.login-container {
+	background: white;
+	width: 350px;
+	padding: 30px;
+	border-radius: 12px;
+	box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+	text-align: center;
+}
+
+.login-container h1 {
+	margin-bottom: 25px;
+	color: #333;
+}
+
+.tabs {
+	display: flex;
+	margin-bottom: 20px;
+}
+
+.tabs button {
+	flex: 1;
+	padding: 10px;
+	border: none;
+	cursor: pointer;
+	background: #eee;
+	font-weight: bold;
+}
+
+.tabs button.active {
+	background: #6a5acd;
+	color: white;
+}
+
+.form input {
+	width: 100%;
+	padding: 12px;
+	margin-bottom: 15px;
+	border-radius: 8px;
+	border: 1px solid #ccc;
+	font-size: 16px;
+}
+
+.form button {
+	width: 100%;
+	padding: 12px;
+	font-size: 16px;
+	border: none;
+	border-radius: 8px;
+	background: #6a5acd;
+	color: white;
+	cursor: pointer;
+}
+
+.form button:hover {
+	background: #5a4bcf;
+}
+
+#mensagem {
+	margin-top: 15px;
+	font-size: 14px;
+	color: red;
+}
